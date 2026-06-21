@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 public extension Date {
     var relativeTime: String {
