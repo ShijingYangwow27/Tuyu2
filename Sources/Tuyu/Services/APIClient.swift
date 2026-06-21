@@ -79,6 +79,7 @@ public actor APIClient {
             guard let http = response as? HTTPURLResponse else {
                 throw APIError.networkError(NSError(domain: "API", code: -1))
             }
+            _ = http.statusCode
 
             let apiResponse = try decoder.decode(APIResponse<R>.self, from: data)
 

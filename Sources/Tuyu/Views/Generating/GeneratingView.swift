@@ -21,7 +21,7 @@ public class GeneratingViewModel: ObservableObject {
     public func start() {
         // 模拟进度更新
         timer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true) { [weak self] _ in
-            Task { @MainActor in
+            Task { @MainActor [weak self] in
                 guard let self = self, !self.isCancelled else { return }
 
                 self.progress += 2

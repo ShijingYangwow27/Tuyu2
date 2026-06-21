@@ -18,9 +18,9 @@ public struct TuyuUploadArea: View {
 
     public var body: some View {
         VStack(spacing: TuyuSpacing.s4) {
-            if let image = image {
+            if image != nil {
                 // 已选图片
-                imagePreview(image: image)
+                imagePreview(imageBinding: $image, pickerItemBinding: $pickerItem)
             } else {
                 // 上传区
                 uploadZone
@@ -60,13 +60,15 @@ public struct TuyuUploadArea: View {
         }
     }
 
-    private func imagePreview(image: UIImage) -> some View {
+    private func imagePreview(imageBinding: Binding<UIImage?>, pickerItemBinding: Binding<PhotosPickerItem?>) -> some View {
         VStack(spacing: TuyuSpacing.s3) {
-            Image(uiImage: image)
-                .resizable()
-                .scaledToFit()
-                .frame(maxHeight: 320)
-                .clipShape(RoundedRectangle(cornerRadius: TuyuRadius.lg))
+            if let image = imageBinding.wrappedValue {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxHeight: 320)
+                    .clipShape(RoundedRectangle(cornerRadius: TuyuRadius.lg))
+            }
 
             HStack(spacing: TuyuSpacing.s3) {
                 TuyuButton(
@@ -74,8 +76,8 @@ public struct TuyuUploadArea: View {
                     size: .medium,
                     text: "重新选择"
                 ) {
-                    image = nil
-                    pickerItem = nil
+                    imageBinding.wrappedValue = nil
+                    pickerItemBinding.wrappedValue = nil
                 }
 
                 TuyuButton(
@@ -83,8 +85,8 @@ public struct TuyuUploadArea: View {
                     size: .medium,
                     text: "删除"
                 ) {
-                    image = nil
-                    pickerItem = nil
+                    imageBinding.wrappedValue = nil
+                    pickerItemBinding.wrappedValue = nil
                 }
             }
         }
