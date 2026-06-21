@@ -49,21 +49,37 @@ jobs:
 
       - name: Build
         run: |
+          set -o pipefail
           xcodebuild \
             -scheme Tuyu \
             -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO \
-            build
+            build 2>&1 | tee build.log | grep -E "(error:|warning:|note:)" | head -50
+          echo "=== exit code: ${PIPESTATUS[0]} ==="
+          exit ${PIPESTATUS[0]}
 
       - name: Test
         run: |
+          set -o pipefail
           xcodebuild \
             -scheme Tuyu \
             -destination 'platform=iOS Simulator,name=iPhone 15' \
             -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO \
-            test
+            test 2>&1 | tee test.log | grep -E "(error:|Test Case|Executed)" | head -50
+          echo "=== exit code: ${PIPESTATUS[0]} ==="
+          exit ${PIPESTATUS[0]}
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tuyu-logs
+          path: |
+            build.log
+            test.log
+          if-no-files-found: ignore
 
       - name: Upload build artifact
         if: always()
