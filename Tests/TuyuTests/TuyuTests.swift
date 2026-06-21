@@ -1,4 +1,5 @@
 import XCTest
+import SwiftUI
 @testable import Tuyu
 
 final class TemplateDataTests: XCTestCase {
