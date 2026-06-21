@@ -16,13 +16,33 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Select Xcode 15.4
-        run: sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+      - name: List available Xcode versions
+        run: |
+          echo "=== /Applications: ==="
+          ls -d /Applications/Xcode*.app 2>/dev/null || echo "no Xcode*.app"
+          echo "=== Current default: ==="
+          xcode-select -p
+          xcodebuild -version 2>&1 || true
+
+      - name: Select Xcode 15.x
+        run: |
+          # 优先 15.4，回退 15.3 / 15.2 / 15.0，最后用默认
+          for v in 15.4 15.3 15.2 15.1 15.0; do
+            if [ -d "/Applications/Xcode_${v}.app" ]; then
+              sudo xcode-select -s "/Applications/Xcode_${v}.app/Contents/Developer"
+              echo "Selected Xcode ${v}"
+              xcodebuild -version
+              exit 0
+            fi
+          done
+          echo "No Xcode 15.x found, using default"
+          xcodebuild -version
 
       - name: Show toolchain
         run: |
           xcodebuild -version
           swift --version
+          xcrun simctl list devices available | head -30
 
       - name: Resolve packages
         run: xcodebuild -resolvePackageDependencies -scheme Tuyu
@@ -31,8 +51,9 @@ jobs:
         run: |
           xcodebuild \
             -scheme Tuyu \
-            -destination 'platform=iOS Simulator,name=iPhone 15' \
+            -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
             build
 
       - name: Test
@@ -41,6 +62,7 @@ jobs:
             -scheme Tuyu \
             -destination 'platform=iOS Simulator,name=iPhone 15' \
             -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
             test
 
       - name: Upload build artifact
